@@ -1,233 +1,79 @@
-# 🚀 Galaxium Travels - Interplanetary Booking System
+# Galaxium Travels — AI Onboarding Pipeline (IBM Bob Hackathon Submission)
 
-A complete full-stack application for booking interplanetary space travel, featuring a modern React frontend and a FastAPI backend with dual REST and MCP protocol support.
+Built by Aman for the IBM Bob 2.0 Hackathon.
 
-## 🌟 Features
+## The problem
 
-- **Modern Space-Themed UI** - Beautiful, responsive interface with animated starfield
-- **Full Booking System** - Browse flights, make bookings, manage reservations
-- **Dual Protocol Backend** - REST API and MCP (Model Context Protocol) support
-- **Type-Safe** - Full TypeScript frontend and Python type hints
-- **Real-Time Updates** - Live flight availability and booking status
-- **User Management** - Simple name/email authentication
-- **Production Ready** - Optimized builds and comprehensive error handling
+Every time a new developer joins a project, they lose hours (sometimes days) just
+figuring out how the codebase actually works before they can make a useful
+contribution. They trace logic across files, hit undocumented quirks the hard way,
+and end up interrupting teammates with basic questions — because docs are usually
+missing, outdated, or were never written in the first place.
 
-## 🏗️ Architecture
+This repo (a fork of IBM's Galaxium Travels demo app) became my test bed for
+fixing that, using IBM Bob 2.0.
 
-```
-galaxium-travels-infrastructure/
-├── booking_system_backend/     # FastAPI backend (Python)
-│   ├── server.py              # Main server with REST & MCP
-│   ├── services/              # Business logic layer
-│   ├── models.py              # SQLAlchemy ORM models
-│   └── tests/                 # Test suite
-│
-├── booking_system_frontend/    # React frontend (TypeScript)
-│   ├── src/
-│   │   ├── components/        # Reusable UI components
-│   │   ├── pages/            # Route pages
-│   │   ├── services/         # API integration
-│   │   └── types/            # TypeScript definitions
-│   └── dist/                 # Production build
-│
-├── start.sh                   # Unix/Mac startup script
-└── start.bat                  # Windows startup script
-```
+## What I built
 
-## 🚀 Quick Start
+An onboarding pipeline inside Bob that takes this codebase and automatically
+generates everything a new dev actually needs to get moving:
 
-### Prerequisites
+- **`AGENTS.md`** — generated with Bob's `/init`, giving persistent project context
+  (stack, build/test/lint commands, architecture, and a few real "gotchas" like how
+  dates are stored as ISO strings instead of proper datetime columns)
+- **Architecture + sequence diagrams** (`docs/diagrams/`) — Mermaid diagrams
+  showing the system's dual REST + MCP backend design, and a full sequence diagram
+  tracing the `book_flight` flow including every error branch
+- **A custom "Onboarding Guide" mode** (my own addition, not from any tutorial) —
+  a reusable, global Bob mode that, for any project, generates:
+  - `WALKTHROUGH.md` — a plain-English tour of how the app works
+  - `SETUP.md` — a step-by-step local setup guide
+  - `FIRST_TASKS.md` — concrete, ranked good-first-tasks with exact file/line
+    references
+- **Subagent delegation** — the first-tasks generation is handed off to a Bob
+  subagent that independently re-scans the codebase in its own isolated context,
+  rather than reusing whatever the main task already had loaded. This actually
+  produced better, more concrete tasks than the first pass.
 
-- **Python 3.8+** - [Download](https://www.python.org/downloads/)
-- **Node.js 18+** - [Download](https://nodejs.org/)
-- **npm** (comes with Node.js)
+## Why this matters (impact)
 
-### Option 1: One-Command Start (Recommended)
+I tested this by timing myself on a real task: understanding how `book_flight`
+works, once by reading the raw source cold, once by reading the generated
+walkthrough.
 
-#### On macOS/Linux:
-```bash
-./start.sh
-```
+Reading `services/booking.py` directly took about **1 minute**. Reading the
+generated `WALKTHROUGH.md` took about **1 minute 40 seconds**.
 
-#### On Windows:
-```bash
-start.bat
-```
+Honestly? For one small, well-written function, raw code was just as fast — there's
+no hidden complexity to unpack. That's a real result and I'm not going to pretend
+otherwise. But it pointed me to where the actual value is: **this app splits logic
+across a REST layer, an MCP layer, a service layer, and a frontend that all have to
+agree with each other**. Nobody figures that out by reading one file. The generated
+docs surface that whole picture — the dual-protocol design, the shared validation
+rules, the "why" behind decisions like returning `ErrorResponse` objects instead of
+raising exceptions — in one place, instead of forcing a new dev to reconstruct it
+by jumping between five files and guessing.
 
-This will automatically:
-- ✅ Install all dependencies
-- ✅ Start the backend server on port 8080
-- ✅ Start the frontend dev server on port 5173
-- ✅ Open both in separate terminal windows
+That's the real time sink this project targets: not reading one function, but
+building a mental model of how a whole system fits together.
 
-### Option 2: Manual Start
+## Bob features used
 
-#### Start Backend:
-```bash
-cd booking_system_backend
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python server.py
-```
+- Agent mode (multi-step reasoning + file generation)
+- `/init` for persistent project context
+- Custom global modes (the differentiator — reusable across any project)
+- Subagents (isolated context for the first-tasks analysis)
+- Document understanding (reading the existing codebase to generate accurate docs)
 
-#### Start Frontend (in a new terminal):
-```bash
-cd booking_system_frontend
-npm install
-npm run dev
-```
+Session summaries proving this usage are in [`bob_sessions/`](bob_sessions/).
 
-## 🌐 Access the Application
+## Repo structure
 
-Once started, access:
+docs/diagrams/ → architecture + sequence diagrams
+docs/onboarding/ → WALKTHROUGH.md, SETUP.md, FIRST_TASKS.md
+bob_sessions/ → Bob task session summary screenshots
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8080
-- **API Documentation**: http://localhost:8080/docs
-- **MCP Endpoint**: http://localhost:8080/mcp
+## Try it yourself
 
-## 📚 Documentation
-
-### Backend
-See [booking_system_backend/README.md](booking_system_backend/README.md) for:
-- API endpoints documentation
-- MCP tools reference
-- Database schema
-- Testing instructions
-
-### Frontend
-See [booking_system_frontend/README.md](booking_system_frontend/README.md) for:
-- Component documentation
-- Styling guide
-- Build instructions
-- Deployment options
-
-## 🎯 User Guide
-
-### Booking a Flight
-
-1. **Browse Flights** - Navigate to the Flights page to see all available routes
-2. **Search & Filter** - Use the search bar to find specific destinations
-3. **Sign In/Register** - Click "Book Now" and enter your name and email
-4. **Confirm Booking** - Review flight details and confirm your reservation
-5. **Manage Bookings** - View and cancel bookings from "My Bookings" page
-
-### Demo Data
-
-The system comes pre-seeded with:
-- **10 Users** - Alice, Bob, Charlie, Diana, Eve, Frank, Grace, Heidi, Ivan, Judy
-- **10 Flights** - Routes between Earth, Mars, Moon, Venus, Jupiter, Europa, Pluto
-- **20 Sample Bookings** - Various booking statuses
-
-## 🛠️ Technology Stack
-
-### Backend
-- **FastAPI** - Modern Python web framework
-- **SQLAlchemy** - ORM for database operations
-- **Pydantic** - Data validation
-- **FastMCP** - MCP protocol support
-- **SQLite** - Lightweight database
-- **Uvicorn** - ASGI server
-
-### Frontend
-- **React 18** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **Framer Motion** - Animations
-- **React Router** - Routing
-- **Axios** - HTTP client
-- **React Hot Toast** - Notifications
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd booking_system_backend
-pytest
-```
-
-### Frontend Build Test
-```bash
-cd booking_system_frontend
-npm run build
-```
-
-## 📦 Production Deployment
-
-### Backend
-```bash
-cd booking_system_backend
-pip install -r requirements.txt
-uvicorn server:app --host 0.0.0.0 --port 8080
-```
-
-### Frontend
-```bash
-cd booking_system_frontend
-npm run build
-# Deploy the 'dist' folder to your hosting service
-```
-
-### Docker Support
-Both backend and frontend include Dockerfiles for containerized deployment.
-
-## 🎨 Customization
-
-### Change API URL
-Edit `booking_system_frontend/.env`:
-```env
-VITE_API_URL=https://your-api-url.com
-```
-
-### Modify Theme Colors
-Edit `booking_system_frontend/tailwind.config.js`:
-```js
-colors: {
-  'cosmic-purple': '#6366F1',
-  'nebula-pink': '#EC4899',
-  // Add your colors
-}
-```
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-- Ensure Python 3.8+ is installed: `python --version`
-- Check if port 8080 is available
-- Verify all dependencies are installed: `pip install -r requirements.txt`
-
-### Frontend won't start
-- Ensure Node.js 18+ is installed: `node --version`
-- Check if port 5173 is available
-- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
-
-### Connection Issues
-- Verify backend is running on http://localhost:8080
-- Check CORS settings in backend
-- Ensure `.env` file exists in frontend with correct API URL
-
-## 📄 License
-
-This project is part of the Galaxium Travels booking system.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## 📧 Support
-
-For issues or questions:
-- Check the documentation in each component's README
-- Review the troubleshooting section above
-- Open an issue on GitHub
-
----
-
-**Built with ❤️ for space travelers** 🚀✨
-
-*Explore the cosmos, one booking at a time!*
+See [`docs/onboarding/SETUP.md`](docs/onboarding/SETUP.md) for full local setup
+instructions for this app.
